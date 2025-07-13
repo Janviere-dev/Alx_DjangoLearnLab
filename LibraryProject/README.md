@@ -1,1 +1,2 @@
-Task 1: setting up django peoject 
+    First task: setting up Django project
+

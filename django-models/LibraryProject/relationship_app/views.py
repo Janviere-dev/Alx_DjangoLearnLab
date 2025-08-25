@@ -6,6 +6,9 @@ from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden
+
 
 
 def list_books(request):
@@ -41,3 +44,11 @@ def register(request):
     else:
         form = UserCreationForm()
     return render(request, 'relationship_app/register.html', {'form': form})
+
+    
+@login_required
+def admin_view(request):
+    if request.user.role != 'Admin':
+        return HttpResponseForbidden("Access denied: Admins only.")
+    return render(request, 'admin_area.html')
+

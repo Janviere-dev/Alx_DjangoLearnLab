@@ -14,9 +14,6 @@ from rest_framework import generics, permissions, status
 from posts.models import Post, Like
 from notifications.models import Notification
 from django.contrib.contenttypes.models import ContentType
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 from posts.models import Post

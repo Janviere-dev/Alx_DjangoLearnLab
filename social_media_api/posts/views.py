@@ -3,9 +3,41 @@ from .models import Post, Comment
 from .serializers import PostSerializer, CommentSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from django.http import JsonResponse
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import Post
+from .serializers import PostSerializer
+from rest_framework import generics, permissions
+from accounts.models import CustomUser
 
-filter_backends = [DjangoFilterBackend]
-filterset_fields = ['title', 'content']
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+
+from rest_framework import generics, permissions
+from rest_framework.response import Response
+from posts.models import Post
+from accounts.models import CustomUser
+
+class FeedView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        following_users = request.user.following.all()
+
+        posts = Post.objects.filter(author__in=following_users).order_by('-created_at')
+
+        serialized_posts = [
+            {
+                'id': post.id,
+                'author': post.author.username,
+                'content': post.content,
+                'created_at': post.created_at
+            }
+            for post in posts
+        ]
+        return Response(serialized_posts)
+
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
     """

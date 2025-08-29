@@ -2,6 +2,7 @@ from rest_framework import viewsets, permissions
 from .models import Post, Comment
 from .serializers import PostSerializer, CommentSerializer
 from django_filters.rest_framework import DjangoFilterBackend
+from django.http import JsonResponse
 
 filter_backends = [DjangoFilterBackend]
 filterset_fields = ['title', 'content']
@@ -28,4 +29,5 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
-
+def some_view(request):
+    return JsonResponse({'message': 'Hello from some_view'})

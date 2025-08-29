@@ -10,7 +10,10 @@ from .models import Post
 from .serializers import PostSerializer
 from rest_framework import generics, permissions
 from accounts.models import CustomUser
-
+from rest_framework import generics, permissions, status
+from posts.models import Post, Like
+from notifications.models import Notification
+from django.contrib.contenttypes.models import ContentType
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 
@@ -63,3 +66,31 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 def some_view(request):
     return JsonResponse({'message': 'Hello from some_view'})
+
+
+class LikePostView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        post = Post.objects.get(pk=pk)
+        like, created = Like.objects.get_or_create(user=request.user, post=post)
+        if created:
+            Notification.objects.create(
+                recipient=post.author,
+                actor=request.user,
+                verb='liked your post',
+                target=post,
+            )
+            return Response({'message': 'Post liked'}, status=status.HTTP_201_CREATED)
+        return Response({'message': 'Already liked'}, status=status.HTTP_200_OK)
+
+class UnlikePostView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        try:
+            like = Like.objects.get(user=request.user, post_id=pk)
+            like.delete()
+            return Response({'message': 'Post unliked'}, status=status.HTTP_200_OK)
+        except Like.DoesNotExist:
+            return Response({'message': 'You haven’t liked this post'}, status=status.HTTP_400_BAD_REQUEST)
